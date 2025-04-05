@@ -3,7 +3,7 @@ name: SonarCloud Analysis
 on:
   push:
     branches:
-      - main
+      - main  # <-- Make sure this matches your branch
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -11,6 +11,17 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest        # Use the latest PostgreSQL image
+        env:
+          POSTGRES_USER: casscaronneUser     # Set the PostgreSQL user
+          POSTGRES_PASSWORD: carcassonne123 # Set the PostgreSQL password
+          POSTGRES_DB: carcassonne        # Set the database name
+        ports:
+          - 5432:5432                 # Map the PostgreSQL port
+        options: --health-cmd="pg_isready -U postgres" --health-timeout=30s --health-start-period=5s --health-retries=3 # Ensure database is ready before running tests
 
     steps:
       - name: Checkout code
@@ -27,6 +38,9 @@ jobs:
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
+
+      - name: Build project
+        run: ./gradlew build
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2
