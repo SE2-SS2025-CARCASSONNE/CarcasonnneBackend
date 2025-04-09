@@ -1,5 +1,7 @@
-package com.carcassonne.backend.config
+package com.carcassonne.backend.controller
+
 import com.carcassonne.backend.model.GameMessage
+import com.carcassonne.backend.repository.GameRepository
 import com.carcassonne.backend.service.GameManager
 import org.springframework.messaging.handler.annotation.MessageMapping
 import org.springframework.messaging.handler.annotation.Payload
@@ -9,7 +11,8 @@ import org.springframework.stereotype.Controller
 @Controller
 class GameWebSocketController(
     private val gameManager: GameManager,
-    private val messagingTemplate: SimpMessagingTemplate
+    private val messagingTemplate: SimpMessagingTemplate,
+    private val gameRepository: GameRepository
 ) {
 
     @MessageMapping("/game/send") // from client to /app/game/send
@@ -45,6 +48,28 @@ class GameWebSocketController(
                     val error = mapOf("type" to "error", "message" to "Invalid move or not your turn")
                     messagingTemplate.convertAndSend("/topic/game/${msg.gameId}", error)
                 }
+            }
+            "start_game" -> {
+                println(">>> [Backend] Received start_game for ${msg.gameId}")
+
+                val game = gameManager.getOrCreateGame(msg.gameId)
+                game.status = "STARTED"
+
+                // Update DB
+                try {
+                    gameRepository.updateStatusByGameCode(msg.gameId, "STARTED")
+                    println(">>> [Backend] Game status updated in DB")
+                } catch (e: Exception) {
+                    println(">>> [Backend] ERROR updating DB: ${e.message}")
+                }
+
+                // Notify clients
+                val payload = mapOf(
+                    "type" to "game_started",
+                    "gameId" to msg.gameId
+                )
+                println(">>> [Backend] Sending game_started to /topic/game/${msg.gameId} with $payload")
+                messagingTemplate.convertAndSend("/topic/game/${msg.gameId}", payload)
             }
         }
     }

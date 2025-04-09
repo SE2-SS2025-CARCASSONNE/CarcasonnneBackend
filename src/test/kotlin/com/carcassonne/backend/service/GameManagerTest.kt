@@ -1,13 +1,12 @@
 package com.carcassonne.backend.service
 
-
 import com.carcassonne.backend.model.GameState
 import com.carcassonne.backend.model.Tile
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.*
 
-class GameManagerTest { /*
+class GameManagerTest {
 
     private lateinit var gameManager: GameManager
 
@@ -50,5 +49,5 @@ class GameManagerTest { /*
 
         assertNull(result, "Move should be invalid because it's not Player2's turn")
         assertFalse(game.board.containsKey(Pair(1, 1)), "Tile should not be placed")
-    }*/
+    }
 }

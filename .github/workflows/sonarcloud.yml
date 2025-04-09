@@ -29,8 +29,8 @@ jobs:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
 
-      - name: Build project
-        run: ./gradlew build
+      - name: Run tests and generate JaCoCo report
+        run: ./gradlew clean build jacocoTestReport
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2

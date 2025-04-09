@@ -10,5 +10,6 @@ data class User(
     val id: Long = 0, // Unique user ID (primary key)
 
     val username: String = "", // Display name for UI and identification
-    val email: String = ""     // Optional login or profile info
+    val email: String = "",    // Optional login or profile info
+    val password: String = ""  // Hashed password for user login
 )

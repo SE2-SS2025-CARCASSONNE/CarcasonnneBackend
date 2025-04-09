@@ -1,5 +1,5 @@
-/*package com.carcassonne.backend
-
+package com.carcassonne.backend
+/*
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
@@ -10,4 +10,5 @@ class BackendApplicationTests {
 	fun contextLoads() {
 	}
 
-}*/
+}
+*/

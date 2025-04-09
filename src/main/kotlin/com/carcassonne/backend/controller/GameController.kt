@@ -4,17 +4,15 @@ import com.carcassonne.backend.entity.Game
 import com.carcassonne.backend.repository.GameRepository
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 
 @RestController
 @RequestMapping("/api/game")
 @Tag(name = "Game", description = "Game control endpoints")
-class GameController {
-
-    @Autowired
-    private lateinit var gameRepository: GameRepository
+class GameController(
+    private val gameRepository: GameRepository //Inject dependency via constructor
+) {
 
     data class CreateGameRequest(val playerCount: Int)
     data class CreateGameResponse(val gameId: String)
@@ -23,7 +21,7 @@ class GameController {
     @GetMapping("/ping")
     fun ping(): String = "pong"
 
-    @Operation(summary = "Create a new game")
+    @Operation(summary = "Create new game")
     @PostMapping("/create")
     fun createGame(@RequestBody request: CreateGameRequest): CreateGameResponse {
         val code = generateGameId()
