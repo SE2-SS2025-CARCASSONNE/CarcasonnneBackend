@@ -8,8 +8,7 @@ data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0, // Unique user ID (primary key)
-
     val username: String = "", // Display name for UI and identification
-    val email: String = "",    // Optional login or profile info
-    val password: String = ""  // Hashed password for user login
+    val password: String = "",  // Hashed password for user login
+    val highScore: Int? = 0 // New attribute to track the user’s highest score
 )

@@ -6,12 +6,15 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
+import org.springframework.security.core.userdetails.User
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.http.ResponseEntity
 
 class GameRestControllerTest {
 
     private lateinit var gameManager: GameManager
     private lateinit var gameRestController: GameRestController
+    private lateinit var userDetails: UserDetails
 
     @BeforeEach
     fun setUp() {
@@ -19,6 +22,8 @@ class GameRestControllerTest {
         gameManager = mock(GameManager::class.java)
         //Pass mocked dependency to GameRestController
         gameRestController = GameRestController(gameManager)
+        //Simulate authenticated user
+        userDetails = User("max", "muster123", emptyList())
     }
 
     @Test
@@ -28,7 +33,7 @@ class GameRestControllerTest {
         val gameState = GameState(gameId = exampleId)
 
         `when`(gameManager.getOrCreateGame(exampleId)).thenReturn(gameState)
-        val response: ResponseEntity<GameState> = gameRestController.getGame(exampleId)
+        val response: ResponseEntity<GameState> = gameRestController.getGame(exampleId, userDetails)
 
         assertEquals(200, response.statusCode.value())
         assertEquals(gameState, response.body)
@@ -43,7 +48,7 @@ class GameRestControllerTest {
         `when`(gameManager.getOrCreateGame(exampleId)).thenThrow(RuntimeException("Critical error"))
 
         val exception = assertThrows(RuntimeException::class.java) {
-            gameRestController.getGame(exampleId)
+            gameRestController.getGame(exampleId, userDetails)
         }
 
         assertEquals("Critical error", exception.message)

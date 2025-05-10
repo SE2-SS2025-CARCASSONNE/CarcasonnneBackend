@@ -25,6 +25,8 @@ class SecurityConfig(
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(//Swagger endpoints should be restricted in production
+                        "/api/game/**", //Just for demo!!!
+                        "/ws/**", //Just for demo!!!
                         "/api/auth/**",
                         "/api/game/ping",
                         "/v3/api-docs/**",

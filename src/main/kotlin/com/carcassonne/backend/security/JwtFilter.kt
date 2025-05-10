@@ -7,12 +7,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
-//Custom filter running once per HTTP request to process JWTs
+//Custom filter running once per HTTP request to extract and validate JWTs
 class JwtFilter(
     private val jwtUtil: JwtUtil, //Inject dependency via constructor
     private val userDetailsService: UserDetailsService
@@ -23,25 +22,28 @@ class JwtFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val authHeader = request.getHeader("Authorization") //Read auth header from request
+        val authHeader = request.getHeader("Authorization") //Read auth header from HTTP request
 
         if (authHeader!=null && authHeader.startsWith("Bearer ")) { //Check if authHeader exists and Bearer scheme is used
             val token = authHeader.substring(7) //Remove "Bearer " prefix to extract JWT string
-            val username = jwtUtil.extractUsername(token)
 
-            if (SecurityContextHolder.getContext().authentication == null) { //Check if other user is logged in on this request
-                val userDetails: UserDetails = userDetailsService.loadUserByUsername(username) //Load user details from DB
+            try {
+                val username = jwtUtil.extractUsername(token)
 
-                if (jwtUtil.tokenValid(token, userDetails)) { //Check if JWT is valid for this user
-                    val authToken = UsernamePasswordAuthenticationToken( //Create security token
-                        userDetails, null, userDetails.authorities)
+                if (SecurityContextHolder.getContext().authentication == null) { //Validate that no other user is logged in on this request
+                    val userDetails: UserDetails = userDetailsService.loadUserByUsername(username) //Load user details from database
 
-                    authToken.details = WebAuthenticationDetailsSource().buildDetails(request) //Add details about HTTP request
-                    SecurityContextHolder.getContext().authentication = authToken //Store security token so that user is logged in
+                    if (jwtUtil.tokenValid(token, userDetails)) { //Check if JWT is valid for this user
+                        val authToken = UsernamePasswordAuthenticationToken( //Create Spring Security auth token
+                            userDetails, null, userDetails.authorities)
+
+                        SecurityContextHolder.getContext().authentication = authToken //Store authToken in security context
+                    }
                 }
+            } catch (_: Exception) {
+                //Spring Security handles rejection later
             }
         }
-
         filterChain.doFilter(request, response)
     }
 }

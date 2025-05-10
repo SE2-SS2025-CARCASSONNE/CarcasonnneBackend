@@ -1,53 +1,89 @@
 package com.carcassonne.backend.model
 
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class GameStateTest {
+    private lateinit var gameState: GameState
 
-    @Test
-    fun `test adding players and getting current player`() {
-        val gameState = GameState(gameId = "test-game")
-        gameState.players.addAll(listOf("Player1", "Player2"))
-
-        assertEquals("Player1", gameState.getCurrentPlayer())
+    @BeforeEach
+    fun setup() {
+        gameState = GameState(gameId = "test-game")
     }
 
     @Test
-    fun `test nextPlayer rotation`() {
-        val gameState = GameState(gameId = "test-rotate")
-        gameState.players.addAll(listOf("Player1", "Player2", "Player3"))
-
-        assertEquals("Player1", gameState.getCurrentPlayer())
-        gameState.nextPlayer()
-        assertEquals("Player2", gameState.getCurrentPlayer())
-        gameState.nextPlayer()
-        assertEquals("Player3", gameState.getCurrentPlayer())
-        gameState.nextPlayer()
-        assertEquals("Player1", gameState.getCurrentPlayer()) // should wrap around
+    fun `test adding players`() {
+        gameState.addPlayer("player1")
+        gameState.addPlayer("player2")
+        assertEquals(2, gameState.players.size)
+        assertEquals("player1", gameState.players[0].id)
     }
 
     @Test
-    fun `test placing tile on board`() {
-        val gameState = GameState(gameId = "test-board")
-        val tile = Tile(x = 1, y = 2, type = "road")
-
-        gameState.board[Pair(tile.x, tile.y)] = tile
-
-        val placedTile = gameState.board[Pair(1, 2)]
-        assertNotNull(placedTile)
-        assertEquals("road", placedTile?.type)
-        assertEquals(1, placedTile?.x)
-        assertEquals(2, placedTile?.y)
+    fun `test starting the game`() {
+        gameState.addPlayer("player1")
+        gameState.addPlayer("player2")
+        gameState.startGame()
+        assertEquals(GamePhase.TILE_PLACEMENT, gameState.status)
     }
 
     @Test
-    fun `test nextPlayer with one player`() {
-        val gameState = GameState(gameId = "solo-game")
-        gameState.players.add("PlayerSolo")
+    fun `test switching players`() {
+        gameState.addPlayer("player1")
+        gameState.addPlayer("player2")
+        gameState.startGame()
+        val current = gameState.getCurrentPlayer()
+        val next = gameState.nextPlayer()
+        assertNotEquals(current, next)
+    }
 
-        assertEquals("PlayerSolo", gameState.getCurrentPlayer())
-        gameState.nextPlayer()
-        assertEquals("PlayerSolo", gameState.getCurrentPlayer())
+    @Test
+    fun `test placing a tile`() {
+        gameState.addPlayer("player1")
+        gameState.addPlayer("player2")
+        gameState.startGame()
+        val tile = Tile(
+            id = "tile1",
+            terrainNorth = TerrainType.ROAD,
+            terrainEast = TerrainType.FIELD,
+            terrainSouth = TerrainType.CITY,
+            terrainWest = TerrainType.ROAD,
+            tileRotation = TileRotation.NORTH
+        )
+        val position = Position(0, 0)
+        gameState.placeTile(tile, position)
+        assertEquals(tile, gameState.board[position])
+        assertEquals(GamePhase.MEEPLE_PLACEMENT, gameState.status)
+    }
+
+    @Test
+    fun `test drawing a tile`() {
+        val tile = Tile(
+            id = "tile1",
+            terrainNorth = TerrainType.ROAD,
+            terrainEast = TerrainType.FIELD,
+            terrainSouth = TerrainType.CITY,
+            terrainWest = TerrainType.ROAD,
+            tileRotation = TileRotation.NORTH
+        )
+        gameState.tileDeck.add(tile)
+        val drawn = gameState.drawTile()
+        assertEquals(tile, drawn)
+        assertTrue(gameState.tileDeck.isEmpty())
+    }
+
+    @Test
+    fun `test finding a player`() {
+        gameState.addPlayer("player1")
+        val player = gameState.findPlayerById("player1")
+        assertNotNull(player)
+        assertEquals("player1", player?.id)
+    }
+
+    @Test
+    fun `test finishing game`() {
+        gameState.finishGame()
+        assertEquals(GamePhase.FINISHED, gameState.status)
     }
 }
