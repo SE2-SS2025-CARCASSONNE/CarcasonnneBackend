@@ -1,4 +1,4 @@
-package com.carcassonne.backend.dto
+package com.carcassonne.backend.model.dto
 
 data class RegisterRequest(
     val username: String,
