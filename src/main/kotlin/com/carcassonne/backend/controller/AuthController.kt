@@ -1,7 +1,7 @@
 package com.carcassonne.backend.controller
 
-import com.carcassonne.backend.dto.LoginRequest
-import com.carcassonne.backend.dto.RegisterRequest
+import com.carcassonne.backend.model.dto.LoginRequest
+import com.carcassonne.backend.model.dto.RegisterRequest
 import com.carcassonne.backend.entity.User
 import com.carcassonne.backend.security.JwtUtil
 import com.carcassonne.backend.security.CustomUserDetailsService
@@ -42,10 +42,10 @@ class AuthController(
 
             ResponseEntity.ok(mapOf("token" to token)) //Returns HTTP 200 with JWT mapped to "token" key in response body
 
-        } catch (e: BadCredentialsException) { //Handles invalid credentials (incorrect username or password)
+        } catch (_: BadCredentialsException) { //Handles invalid credentials (incorrect username or password)
             ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(mapOf("message" to "Invalid username or password. Please try again."))
-        } catch (e: Exception) { //Handles all other unexpected errors
+        } catch (_: Exception) { //Handles all other unexpected errors
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(mapOf("message" to "Something went wrong on our end. Please try again later."))
         }
@@ -71,7 +71,7 @@ class AuthController(
             ResponseEntity.status(HttpStatus.CREATED)
                 .body(mapOf("message" to "Account registered successfully. Please log in."))
 
-        } catch (e: Exception) { //Handles all other unexpected errors
+        } catch (_: Exception) { //Handles all other unexpected errors
             ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(mapOf("message" to "Something went wrong on our end. Please try again later."))
         }
