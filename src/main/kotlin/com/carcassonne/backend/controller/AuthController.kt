@@ -1,7 +1,7 @@
 package com.carcassonne.backend.controller
 
-import com.carcassonne.backend.dto.LoginRequest
-import com.carcassonne.backend.dto.RegisterRequest
+import com.carcassonne.backend.model.dto.LoginRequest
+import com.carcassonne.backend.model.dto.RegisterRequest
 import com.carcassonne.backend.entity.User
 import com.carcassonne.backend.security.JwtUtil
 import com.carcassonne.backend.security.CustomUserDetailsService
